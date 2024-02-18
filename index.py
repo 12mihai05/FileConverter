@@ -3,36 +3,33 @@ import shutil
 
 def convert_files_in_folder(folder_path, target_format, output_folder):
     # Check if the folder exists
-    if not os.path.isdir(folder_path):
+    if not os.path.exists(folder_path):
         print(f"Error: Folder {folder_path} not found.")
         return
 
-    # Iterate over all files and subdirectories in the folder
-    for root, dirs, files in os.walk(folder_path):
-        for item in dirs[:]:  # Make a copy of the list to iterate over
-            subdir_path = os.path.join(root, item)
-            # Create a corresponding folder in the output directory with the target format appended
+    # Get the list of items (files and directories) in the folder
+    items = os.listdir(folder_path)
+
+    # Iterate over each item in the folder
+    for item in items:
+        item_path = os.path.join(folder_path, item)
+        # If the item is a file, convert it to the target format
+        if os.path.isfile(item_path):
+            convert_file(item_path, target_format, output_folder)
+        # If the item is a directory, create a corresponding folder in the output directory
+        elif os.path.isdir(item_path):
             subdir_output_folder = os.path.join(output_folder, item + '.' + target_format)
-            convert_files_in_folder(subdir_path, target_format, subdir_output_folder)
+            os.makedirs(subdir_output_folder, exist_ok=True)
+            # Recursively call the function for the subdirectory
+            convert_files_in_folder(item_path, target_format, subdir_output_folder)
 
-        for file in files:
-            # Get the full path of the file
-            file_path = os.path.join(root, file)
-            # Convert and copy the file
-            convert_file(file_path, target_format, folder_path, output_folder)
-
-def convert_file(file_path, target_format, input_folder, output_folder):
-    # Get the relative path of the file within the input folder
-    relative_path = os.path.relpath(file_path, input_folder)
+def convert_file(file_path, target_format, output_folder):
     # Construct the output file path
-    output_file_path = os.path.join(output_folder, relative_path)
-    # Create the output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
-    # Construct the path for the converted file
-    converted_file_path = os.path.splitext(output_file_path)[0] + '.' + target_format
+    file_name = os.path.basename(file_path)
+    output_file_path = os.path.join(output_folder, file_name.split('.')[0] + '.' + target_format)
     # Convert and copy the file
-    shutil.copyfile(file_path, converted_file_path)
-    print(f"File {file_path} converted to {target_format} and saved to {converted_file_path}.")
+    shutil.copyfile(file_path, output_file_path)
+    print(f"File {file_path} converted to {target_format} and saved to {output_file_path}.")
 
 def main():
     # Prompt the user for input
