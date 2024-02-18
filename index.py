@@ -59,7 +59,7 @@ def convert_file(file_path, target_format, output_file_path):
 def main():
     # Prompt the user for input
     folder_to_convert = r"C:\Users\pasar\Desktop\Converter\Files"
-    target_format = "png"
+    target_format = input("Enter the target file format you want to convert to: ")
     output_folder = r"C:\Users\pasar\Desktop\Converter\Done"
 
     # Convert files in the folder
