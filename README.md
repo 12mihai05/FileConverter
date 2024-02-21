@@ -17,7 +17,7 @@ FileConverter is designed to convert files from a variety of formats to the targ
 - **Supported Formats**: FileConverter supports conversion for various file formats, including but not limited to:
   - PDF (Portable Document Format)
   - DOCX (Microsoft Word Document)
-  - Images (e.g., JPEG, PNG, GIF, etc.)
+  - Images (e.g., JPEG, JPG, PNG etc.)
   - Text files (e.g., TXT)
   - and more.
 
