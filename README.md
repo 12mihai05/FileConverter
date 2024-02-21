@@ -6,7 +6,7 @@ FileConverter is a Python program that enables you to convert files from PDF, DO
 
 1. Clone this repository to your local machine.
 2. Navigate to the directory where the program is located.
-3. Run the program by executing the `main.py` file.
+3. Run the program by executing the `index.py` file.
 4. Follow the prompts to specify the target file format and input/output folders.
 5. The program will convert the files in the specified input folder to the chosen format and save them to the output folder. If you choose to convert a folder, the program will create a corresponding folder in the output directory with the same name + `.` + `new format`.
 
