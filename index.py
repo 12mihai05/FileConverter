@@ -130,24 +130,8 @@ def convert_webm_avi_mp4(input_file_path, output_file_path):
 
 def convert_video_gif(input_file_path, output_file_path):
     try:
-        # Load the video clip
-        clip = moviepy.VideoFileClip(input_file_path)
-
-        # Get the duration of the video clip
-        duration = clip.duration
-
-        # Get the frame rate of the video clip
-        fps = clip.fps
-
-        # Set the start and end time for the clip
-        start_time = 0
-        end_time = duration
-
-        # Extract frames from the video clip
-        clip = clip.subclip(start_time, end_time)
-
-        # Write the frames to a GIF file
-        clip.write_gif(output_file_path, fps=fps)
+        # Use ffmpeg to convert video to GIF while preserving aspect ratio
+        subprocess.run(['ffmpeg', '-i', input_file_path, '-vf', 'fps=50,scale=480:-1', output_file_path])
         print("Successfully converted to GIF:", output_file_path)
     except Exception as e:
         print("Error converting to GIF:", e)
@@ -189,12 +173,24 @@ def convert_mov_video(input_file_path, output_file_path, target_format):
 
 
 
+
+
+
 #aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
+#ffmpeg -i "C:\Users\pasar\Desktop\Converter\Files\sample_gif.gif" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -pix_fmt yuv420p -color_primaries bt709 -crf 18 "C:\Users\pasar\Desktop\Converter\Done\sample_gif.mov"
+#ffmpeg -i "C:\Users\pasar\Desktop\Converter\Files\sample_gif.gif" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart "C:\Users\pasar\Desktop\Converter\Done\sample_gif.mov"
+#ffmpeg -i "C:\Users\pasar\Desktop\Converter\Files\Sample_webm.webm" -c:v libx264 -pix_fmt yuv420p -c:a aac -movflags +faststart "C:\Users\pasar\Desktop\Converter\Done\Sample_webm.mov"
 
 
 def convert_video_mov(input_file_path, output_file_path, target_format):
     try:
+        if target_format == 'mov':
+            # If target format is MOV, and input file format is also MOV, just copy the file
+            shutil.copyfile(input_file_path, output_file_path)
+            print("MOV file is already in the correct format. Copied.")
+            return
+            
         # Define dictionary to map target formats to FFmpeg commands
         ffmpeg_commands = {
             'mp4': [
@@ -211,24 +207,24 @@ def convert_video_mov(input_file_path, output_file_path, target_format):
             'gif': [
                 'ffmpeg', '-i', input_file_path,
                 '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
-                '-c:v', 'libx264',  # MOV format with H.264 codec
                 '-pix_fmt', 'yuv420p',
-                '-c:a', 'aac',
-                '-movflags', 'faststart',
+                '-color_primaries', 'bt709',
+                '-crf', '18',
                 output_file_path
             ],
             'webm': [
-            'ffmpeg', '-i', input_file_path,
-            '-c:v', 'libx264',
-            '-pix_fmt', 'yuv420p',
-            '-c:a', 'aac',
-            '-movflags', 'faststart',
-            output_file_path
-        ],
-            'avi': [
                 'ffmpeg', '-i', input_file_path,
                 '-c:v', 'libx264',
+                '-pix_fmt', 'yuv420p',
                 '-c:a', 'aac',
+                '-movflags', '+faststart',
+                output_file_path
+            ],
+            'avi': [
+                'ffmpeg', '-i', input_file_path,
+                '-c:v', 'rawvideo',
+                '-pix_fmt', 'yuv420p',
+                '-c:a', 'pcm_s16le',
                 output_file_path
             ]
         }
@@ -241,14 +237,21 @@ def convert_video_mov(input_file_path, output_file_path, target_format):
             print(f"Unsupported target format: {target_format}")
             return
 
-        # Execute the FFmpeg command
-        subprocess.run(ffmpeg_command, capture_output=True, check=True, text=True)
+        # Print the constructed FFmpeg command
+        print("FFmpeg Command:", ffmpeg_command)
+
+        # Execute the FFmpeg command using subprocess.run
+        subprocess.run(ffmpeg_command, check=True)
 
         print(f"Successfully converted {input_file_path} to MOV: {output_file_path}")
     except subprocess.CalledProcessError as e:
-        print(f"Error converting {input_file_path} to MOV: {e.stderr}")
-    except Exception as e:
         print(f"An error occurred: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
+
+
 
 
 
