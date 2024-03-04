@@ -3,7 +3,13 @@ import shutil
 import comtypes.client
 from pdf2docx import Converter
 import moviepy.editor as moviepy
+from moviepy.editor import *
 import subprocess
+from PIL import Image
+import svgwrite
+import xml.etree.ElementTree as ET
+import re
+
 
 def convert_files_in_folder(folder_path, target_format, output_folder):
     # Check if the folder exists
@@ -59,7 +65,6 @@ def convert_file(file_path, target_format, output_folder):
             convert_video_mov(file_path,output_file_path,target_format)
         elif target_format.lower() == 'mov':
             convert_mov_video(file_path, output_file_path, target_format)
-            print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         elif file_extension.lower() == '.gif':
             convert_gif_video(file_path ,output_file_path,target_format)
         elif target_format.lower() in movie_files:
@@ -68,10 +73,93 @@ def convert_file(file_path, target_format, output_folder):
             # Unsupported conversion, simply copy the file
             shutil.copyfile(file_path, output_file_path)
             print(f"Unsupported conversion for {file_path}. File copied to {output_file_path}.")
+    elif target_format == 'svg':
+        convert_to_svg(file_path, output_file_path)
+    elif file_extension.lower() == '.svg':
+        convert_svg_to_image(file_path, output_file_path)
     else:
         # For other formats, simply copy the file
         shutil.copyfile(file_path, output_file_path)
         print(f"File {file_path} converted to {target_format} and saved to {output_file_path}.")
+
+
+def process_svg_content(svg_content):
+    # Regular expression pattern to extract viewBox attribute
+    viewbox_pattern = re.compile(r'viewBox="([^"]*)"')
+
+    # Find viewBox attribute
+    viewbox_match = viewbox_pattern.search(svg_content)
+
+    if viewbox_match:
+        # Extract viewBox values
+        viewbox_values = viewbox_match.group(1).split()
+        if len(viewbox_values) == 4:
+            width = float(viewbox_values[2])
+            height = float(viewbox_values[3])
+            return width, height
+        else:
+            print("Invalid viewBox attribute format")
+    else:
+        print("viewBox attribute not found")
+    return None, None
+
+def convert_svg_to_image(input_svg_path, output_png_path):
+    try:
+        inkscape = r"C:\Program Files\Inkscape\bin\inkscape.exe"  # path to inkscape executable
+
+        # Read SVG file content
+        with open(input_svg_path, "r") as f:
+            svg_content = f.read()
+
+        print("SVG Content:")
+        print(svg_content)
+
+        # Get SVG dimensions using process_svg_content function
+        width, height = process_svg_content(svg_content)
+        if width is not None and height is not None:
+            print("SVG Width:", width)
+            print("SVG Height:", height)
+
+
+            # Export SVG to PNG using Inkscape
+            subprocess.run([inkscape, '--export-type=png', f'--export-filename={output_png_path}',
+                f'--export-width={width}', f'--export-height={height}', input_svg_path])
+            print("Conversion Successful!")
+        else:
+            print("SVG dimensions could not be determined. Conversion aborted.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+def convert_to_svg(input_image_path, output_svg_path):
+    try:
+        # Open the image file
+        image = Image.open(input_image_path)
+
+        # Convert the image to RGB mode if it's not already in that mode
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # Create SVG object
+        svg_width, svg_height = image.size
+        svg_document = svgwrite.Drawing(output_svg_path, size=(svg_width, svg_height))
+
+        # Convert image to SVG
+        for y in range(svg_height):
+            for x in range(svg_width):
+                r, g, b = image.getpixel((x, y))
+                svg_document.add(svg_document.rect(insert=(x, y), size=(1, 1), fill=f'rgb({r},{g},{b})'))
+
+        # Save SVG file
+        svg_document.save()
+
+        print(f"SVG file saved to: {output_svg_path}")
+
+    except Exception as e:
+        print(f"Error converting image to SVG: {e}")
+
+
 
 def convert_docx_to_pdf(docx_file_path, pdf_file_path):
     # Initialize COM
@@ -129,12 +217,11 @@ def convert_webm_avi_mp4(input_file_path, output_file_path):
 
 
 def convert_video_gif(input_file_path, output_file_path):
-    try:
-        # Use ffmpeg to convert video to GIF while preserving aspect ratio
-        subprocess.run(['ffmpeg', '-i', input_file_path, '-vf', 'fps=50,scale=480:-1', output_file_path])
-        print("Successfully converted to GIF:", output_file_path)
-    except Exception as e:
-        print("Error converting to GIF:", e)
+    video_clip = VideoFileClip(input_file_path)
+    
+    # Write the video to a GIF file without resizing
+    video_clip.write_gif(output_file_path)
+
 
 def convert_mov_video(input_file_path, output_file_path, target_format):
     try:
