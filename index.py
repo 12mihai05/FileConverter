@@ -9,6 +9,7 @@ from PIL import Image
 import svgwrite
 import xml.etree.ElementTree as ET
 import re
+from rembg import remove
 
 
 def convert_files_in_folder(folder_path, target_format, output_folder):
@@ -77,6 +78,9 @@ def convert_file(file_path, target_format, output_folder):
         convert_to_svg(file_path, output_file_path)
     elif file_extension.lower() == '.svg':
         convert_svg_to_image(file_path, output_file_path)
+    elif target_format == 'bgrm':
+        output_file_path = os.path.join(output_folder, os.path.basename(file_name) + '_bgrm.png')
+        bg_rm(file_path, output_file_path)  
     else:
         # For other formats, simply copy the file
         shutil.copyfile(file_path, output_file_path)
@@ -373,6 +377,26 @@ def convert_gif_video(input_file_path, output_file_path, target_format):
         print(f"Error converting GIF to {target_format.upper()}: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
+
+def bg_rm(input_file_path, output_file_path):
+    try:
+         # Extract the filename and extension from the input file path
+        # file_name, file_extension = os.path.splitext(os.path.basename(input_file_path))
+        # output_file_path = os.path.join(output_file_path, f"{file_name}_bgrm{file_extension}")
+
+        # Open the image from the file path
+        input_image = Image.open(input_file_path)
+
+        # Assuming 'remove' is a function from a library that removes backgrounds
+        output_image = remove(input_image, post_process_mask=True)
+
+        # Save the output image directly to a file
+        output_image.save(output_file_path, 'PNG')
+
+        print(f"Background removed and saved to: {output_file_path}")
+
+    except Exception as e:
+        print(f"An error occurred while removing the background: {e}")
 
 
 def main():
