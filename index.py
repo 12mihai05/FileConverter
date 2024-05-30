@@ -194,9 +194,9 @@ def convert_pdf_to_docx(pdf_file_path, docx_file_path):
     
     print(f"File {pdf_file_path} converted to DOCX and saved to {docx_file_path}.")
 
-def convert_webm_avi_mp4(input_file_path, output_file_path):
-    clip = moviepy.VideoFileClip(input_file_path)
-    clip.write_videofile(output_file_path)
+# def convert_webm_avi_mp4(input_file_path, output_file_path):
+#     clip = moviepy.VideoFileClip(input_file_path)
+#     clip.write_videofile(output_file_path)
 
 
 def convert_webm_avi_mp4(input_file_path, output_file_path):
@@ -380,10 +380,6 @@ def convert_gif_video(input_file_path, output_file_path, target_format):
 
 def bg_rm(input_file_path, output_file_path):
     try:
-         # Extract the filename and extension from the input file path
-        # file_name, file_extension = os.path.splitext(os.path.basename(input_file_path))
-        # output_file_path = os.path.join(output_file_path, f"{file_name}_bgrm{file_extension}")
-
         # Open the image from the file path
         input_image = Image.open(input_file_path)
 
